@@ -2,9 +2,9 @@ const express = require('express')
 const app = express()
 
 // 设置跨域访问
-app.all('*', function (req, res, next) {
+app.all('*', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With')
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild')
   res.header('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')
   res.header('X-Powered-By', '3.2.1')
   res.header('Content-Type', 'application/json;charset=utf-8')
@@ -28,19 +28,18 @@ for (let i = 0; i < 10; i++) {
 }
 
 // 写个接口list
-app.get('/list', function (req, res) {
+app.get('/list', function (req, res, next) {
   res.status(200),
   res.json(questions)
 })
 
 // 登录
-app.post('/api/user/login', (req, res) => {
+app.post('/api/user/login', (req, res, next) => {
   let query = ''
   req.on('data', (chunk) => {
     query += chunk
   })
   req.on('end', () => {
-    console.log(query)
     let params = JSON.parse(query)
     if (!params.username) {
       res.status(200)
@@ -77,8 +76,8 @@ app.post('/api/user/login', (req, res) => {
 })
 
 // 配置服务端口
-const server = app.listen(3000, function () {
-  const host = server.address().address;
-  const port = server.address().port;
+const server = app.listen(3000, () => {
+  const host = server.address().address
+  const port = server.address().port
   console.log('Example app listening at http://%s:%s', host, port)
 })
