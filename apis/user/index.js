@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 module.exports = router
 
-router.post('/login', (req, res, next) => {
+router.all('/login', (req, res, next) => {
   const params = req.body || req.query
   if (!params.username) {
     res.status(200)
@@ -35,4 +35,13 @@ router.post('/login', (req, res, next) => {
       }
     })
   }
+})
+
+router.all('/logout', (req, res, next) => {
+  res.status(200)
+  res.json({
+    code: 200,
+    data: '',
+    message: '正常退出'
+  })
 })
