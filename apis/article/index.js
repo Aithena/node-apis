@@ -1,28 +1,49 @@
 const express = require('express')
+const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
 const router = express.Router()
 module.exports = router
 
-const config = require('../../mysql/config')
+const { config, secretkey } = require('../../utils/mysql')
 const mysql = require('mysql')
 const conn = mysql.createConnection(config)
 
-router.all('/list', (req, res, next) => {
-  const id = req.body.id || req.query.id
-  const sql = 'SELECT * FROM article ' + (id ? 'WHERE id = ?' : '')
-
-  conn.query(sql, id, (error, result) => {
-    res.status(200)
-
+router.get('/list', (req, res, next) => {
+  const { authorization: token } = req.headers
+  const { id, page } = req.query
+  res.status(200)
+  
+  jwt.verify(token, secretkey, (error, decode) => {
     if (error) {
-      return res.json({
-        code: 404,
-        list: '',
-        error: '获取失败'
+      res.json({
+        code: 500,
+        error: error
       })
     } else {
-      res.json({
-        code: 200,
-        list: result
+      let sql = 'SELECT * FROM article'
+      if (id) {
+        sql += ' WHERE id = ?'
+      } else if (page) {
+        sql += ' LIMIT 1, 2'
+      }
+      
+      conn.query(sql, id, (error, result) => {
+        if (error) {
+          return res.json({
+            code: 400,
+            error: '数据库错误'
+          })
+        } else if (!result.length) {
+          res.json({
+            code: 200,
+            list: []
+          })
+        } else {
+          res.json({
+            code: 200,
+            list: result
+          })
+        }
       })
     }
   })
@@ -74,7 +95,7 @@ router.all('/update', (req, res, next) => {
 })
 
 router.all('/delete', (req, res, next) => {
-  const id = req.body.id || req.query.id
+  const { id } = req.body || req.query
   const sql = 'DELETE FROM article WHERE id = ?'
 
   conn.query(sql, id, (error, result) => {

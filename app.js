@@ -19,5 +19,4 @@ app.all('*', (req, res, next) => {
 })
 
 app.use('/api/user', require('./apis/user'))
-app.use('/api/member', require('./apis/member'))
 app.use('/api/article', require('./apis/article'))
