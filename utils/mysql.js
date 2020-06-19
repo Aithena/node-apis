@@ -1,6 +1,11 @@
 const mysql = require('mysql')
-const { db } = require('./mysql.config')
-const con = mysql.createConnection(db)
+const con = mysql.createConnection({
+  "host": "localhost",
+  "port": "3306",
+  "user": "root",
+  "password": "root",
+  "database": "node_apis"
+})
 con.connect()
 
 function exec(sql) {
