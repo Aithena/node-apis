@@ -14,7 +14,6 @@ router.get('/list', (req, res, next) => {
   res.status(200)
   
   jwt.verify(token, secretkey, (error, decode) => {
-    const post = req.body || req.query
     let sql = 'SELECT * FROM article'
     conn.query(sql, id, (error, result) => {
       if (error) {
