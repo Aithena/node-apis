@@ -4,37 +4,68 @@ const crypto = require('crypto')
 const router = express.Router()
 module.exports = router
 
-const { config, secretkey } = require('../../utils/mysql')
-const mysql = require('mysql')
-const conn = mysql.createConnection(config)
+const { secretkey } = require('../../db/mysql.config')
+const mysql = require('../../db/mysql')
 
 router.get('/list', (req, res, next) => {
   const { authorization: token } = req.headers
-  const { id, page } = req.query
-  res.status(200)
+  const { id, title, page } = req.query
+  
+  let sql = 'SELECT * FROM article'
+  let params = []
+
+  if (id) {
+    sql += ' WHERE id = ?'
+    params.push('%' + id + '%')
+  }
+  if (title) {
+    sql += ' WHERE title LIKE ?'
+    params.push('%' + title + '%')
+  }
+  if (page) {
+    let current = page
+    let pageSize = 2
+    sql += ' limit ?, ?'
+    params.push((current-1) * pageSize, parseInt(pageSize))
+  }
   
   jwt.verify(token, secretkey, (error, decode) => {
-    let sql = 'SELECT * FROM article'
-    conn.query(sql, id, (error, result) => {
-      if (error) {
-        return res.json({
-          code: 400,
-          error: '数据库错误'
-        })
-      } else if (!result.length) {
-        res.json({
-          code: 200,
-          list: []
-        })
-      } else {
-        res.json({
-          code: 200,
-          list: result
-        })
-      }
+    mysql.query(sql, params, (result, fields) => {
+      res.json({
+        code: 200,
+        list: result
+      })
     })
   })
 })
+
+// router.get('/list', (req, res, next) => {
+//   const { authorization: token } = req.headers
+//   const { id, page } = req.query
+//   res.status(200)
+  
+//   jwt.verify(token, secretkey, (error, decode) => {
+//     let sql = 'SELECT * FROM article'
+//     conn.query(sql, id, (error, result) => {
+//       if (error) {
+//         return res.json({
+//           code: 400,
+//           error: '数据库错误'
+//         })
+//       } else if (!result.length) {
+//         res.json({
+//           code: 200,
+//           list: []
+//         })
+//       } else {
+//         res.json({
+//           code: 200,
+//           list: result
+//         })
+//       }
+//     })
+//   })
+// })
 
 router.all('/add', (req, res, next) => {
   const post = req.body || req.query
