@@ -11,7 +11,7 @@ router.get('/list', (req, res, next) => {
   const { authorization: token } = req.headers
   const { id, title, page } = req.query
   
-  let sql = 'SELECT * FROM article'
+  let sql = 'SELECT * FROM node_article'
   let params = []
 
   if (id) {
@@ -19,7 +19,7 @@ router.get('/list', (req, res, next) => {
     params.push('%' + id + '%')
   }
   if (title) {
-    sql += ' WHERE title LIKE ?'
+    sql += ' WHERE article_title LIKE ?'
     params.push('%' + title + '%')
   }
   if (page) {
@@ -39,43 +39,13 @@ router.get('/list', (req, res, next) => {
   })
 })
 
-// router.get('/list', (req, res, next) => {
-//   const { authorization: token } = req.headers
-//   const { id, page } = req.query
-//   res.status(200)
-  
-//   jwt.verify(token, secretkey, (error, decode) => {
-//     let sql = 'SELECT * FROM article'
-//     conn.query(sql, id, (error, result) => {
-//       if (error) {
-//         return res.json({
-//           code: 400,
-//           error: '数据库错误'
-//         })
-//       } else if (!result.length) {
-//         res.json({
-//           code: 200,
-//           list: []
-//         })
-//       } else {
-//         res.json({
-//           code: 200,
-//           list: result
-//         })
-//       }
-//     })
-//   })
-// })
-
 router.all('/add', (req, res, next) => {
   const post = req.body || req.query
-  const sql = 'INSERT INTO article SET ?'
+  const sql = 'INSERT INTO node_article SET ?'
 
-  conn.query(sql, post, (error, result) => {
-    res.status(200)
-
+  mysql.query(sql, post, (error, result) => {
     if (error) {
-      return res.json({
+      res.json({
         code: 404,
         data: '',
         error: '添加失败'
@@ -92,13 +62,11 @@ router.all('/add', (req, res, next) => {
 router.all('/update', (req, res, next) => {
   const post = req.body || req.query
   const id = req.body.id || req.query.id
-  const sql = 'UPDATE article SET ? WHERE id = ?'
+  const sql = 'UPDATE node_article SET ? WHERE id = ?'
 
-  conn.query(sql, [post, id], (error, result) => {
-    res.status(200)
-
+  mysql.query(sql, [post, id], (error, result) => {
     if (error) {
-      return res.json({
+      res.json({
         code: 404,
         data: '',
         error: '修改失败'
@@ -114,13 +82,11 @@ router.all('/update', (req, res, next) => {
 
 router.all('/delete', (req, res, next) => {
   const { id } = req.body || req.query
-  const sql = 'DELETE FROM article WHERE id = ?'
+  const sql = 'DELETE FROM node_article WHERE id = ?'
 
-  conn.query(sql, id, (error, result) => {
-    res.status(200)
-
+  mysql.query(sql, id, (error, result) => {
     if (error) {
-      return res.json({
+      res.json({
         code: 404,
         data: '',
         error: '删除失败'
