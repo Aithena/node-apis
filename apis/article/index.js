@@ -16,7 +16,7 @@ router.get('/list', (req, res, next) => {
 
   if (id) {
     sql += ' WHERE id = ?'
-    params.push('%' + id + '%')
+    params.push(id)
   }
   if (title) {
     sql += ' WHERE article_title LIKE ?'
@@ -30,12 +30,19 @@ router.get('/list', (req, res, next) => {
   }
   
   jwt.verify(token, secretkey, (error, decode) => {
-    mysql.query(sql, params, (result, fields) => {
+    if (error) {
       res.json({
-        code: 200,
-        list: result
+        code: 400,
+        error: error
       })
-    })
+    } else {
+      mysql.query(sql, params, (result, fields) => {
+        res.json({
+          code: 200,
+          list: result
+        })
+      })
+    }
   })
 })
 
