@@ -4,14 +4,12 @@ const crypto = require('crypto')
 const router = express.Router()
 module.exports = router
 
-const { config, secretkey } = require('../../utils/mysql')
-const mysql = require('mysql')
-const conn = mysql.createConnection(config)
+const { secretkey } = require('../../db/mysql.config')
+const mysql = require('../../db/mysql')
 
 router.all('/login', (req, res, next) => {
   const { userName, password } = req.body || req.query
-  res.status(200)
-
+  
   if (!userName) {
     res.json({
       code: 301,
@@ -23,38 +21,30 @@ router.all('/login', (req, res, next) => {
       error: '密码不能为空'
     })
   } else {
-    const sql = 'SELECT * FROM admin ' + (userName ? 'WHERE userName = ?' : '')
-    conn.query(sql, userName, (error, result) => {
-      if (error) {
-        return res.json({
-          code: 301,
-          list: '',
-          error: '系统错误'
-        })
-      } else if (!result.length) {
-        return res.json({
+    const sql = 'SELECT * FROM node_admin ' + (userName ? 'WHERE user_name = ?' : '')
+    mysql.query(sql, userName, (result) => {
+      if (!result.length) {
+        res.json({
           code: 301,
           error: '用户不存在'
         })
+      } else if (result[0].user_password === crypto.createHash('md5').update(password).digest('hex')) {
+        const token = jwt.sign({
+          id: result[0].id,
+          userName: result[0].user_name
+        }, secretkey, {
+          expiresIn: '8h'
+        })
+        res.json({
+          code: 200,
+          data: '登陆成功',
+          authorization: token
+        })
       } else {
-        if (result[0].password === crypto.createHash('md5').update(password).digest('hex')) {
-          const token = jwt.sign({
-            id: result[0].id,
-            userName: result[0].userName
-          }, secretkey, {
-            expiresIn: '8h'
-          })
-          return res.json({
-            code: 200,
-            data: '登陆成功',
-            authorization: token
-          })
-        } else {
-          return res.json({
-            code: 301,
-            error: '密码错误'
-          })
-        }
+        res.json({
+          code: 301,
+          error: '密码错误'
+        })
       }
     })
   }
@@ -62,36 +52,29 @@ router.all('/login', (req, res, next) => {
 
 router.get('/getInfo', (req, res, next) => {
   const { authorization: token } = req.headers
-  res.status(200)
-  
+
   jwt.verify(token, secretkey, (error, decode) => {
     if (error) {
       res.json({
-        code: 500,
+        code: 400,
         error: error
       })
     } else {
       const { id } = decode
-      const sql = 'SELECT * FROM admin ' + (id ? 'WHERE id = ?' : '')
-      conn.query(sql, id, (error, result) => {
-        if (error) {
-          return res.json({
-            code: 400,
-            list: '',
-            error: '数据库错误'
-          })
-        } else if (!result.length) {
-          return res.json({
+      const sql = 'SELECT * FROM node_admin ' + (id ? 'WHERE id = ?' : '')
+      mysql.query(sql, id, (result) => {
+        if (!result.length) {
+          res.json({
             code: 301,
             error: '用户不存在'
           })
         } else {
-          let user = result[0]
-          delete user.password
-          user.roles = [user.roles]
-          return res.json({
+          let data = result[0]
+          delete data.user_password
+          data.user_roles = [data.user_roles]
+          res.json({
             code: 200,
-            data: user
+            data: data
           })
         }
       })
@@ -100,7 +83,6 @@ router.get('/getInfo', (req, res, next) => {
 })
 
 router.all('/logout', (req, res, next) => {
-  res.status(200)
   res.json({
     code: 200,
     data: '',
