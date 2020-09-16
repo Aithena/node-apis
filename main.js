@@ -1,9 +1,8 @@
+const http = require('http')
 const express = require('express')
 const app = express()
-const port = 9501
 const host = 'localhost'
 
-app.listen(port, host, () => console.log('Example app listening at http://%s:%s', host, port))
 app.use(require('body-parser').json())
 app.use(require('body-parser').urlencoded({
   extended: false
@@ -21,3 +20,5 @@ app.all('*', (req, res, next) => {
 
 app.use('/api/user', require('./api/user'))
 app.use('/api/article', require('./api/article'))
+
+http.createServer(app).listen(3000, host, () => console.log('Example app listening at http://%s:%s', host, 3000))
