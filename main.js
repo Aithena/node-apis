@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const port = 9501
 const host = 'localhost'
+
 app.listen(port, host, () => console.log('Example app listening at http://%s:%s', host, port))
 app.use(require('body-parser').json())
 app.use(require('body-parser').urlencoded({
