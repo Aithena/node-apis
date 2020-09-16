@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = 3000
+const port = 9501
 const host = 'localhost'
 app.listen(port, host, () => console.log('Example app listening at http://%s:%s', host, port))
 app.use(require('body-parser').json())
@@ -18,5 +18,5 @@ app.all('*', (req, res, next) => {
   req.method.toUpperCase() === 'OPTIONS' ? res.sendStatus(200) : next()
 })
 
-app.use('/api/user', require('./apis/user'))
-app.use('/api/article', require('./apis/article'))
+app.use('/api/user', require('./api/user'))
+app.use('/api/article', require('./api/article'))

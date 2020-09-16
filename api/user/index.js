@@ -4,8 +4,8 @@ const crypto = require('crypto')
 const router = express.Router()
 module.exports = router
 
-const { secretkey } = require('../../db/mysql.config')
-const mysql = require('../../db/mysql')
+const { secretkey } = require('../../mysql/mysql.config')
+const mysql = require('../../mysql/mysql')
 
 router.all('/login', (req, res, next) => {
   const { userName, password } = req.body || req.query
